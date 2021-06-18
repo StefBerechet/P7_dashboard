@@ -35,9 +35,9 @@ def shap_explainer (model, X_val_std):
     shap_values = explainer.shap_values(X_val_std)   
     return explainer, shap_values
 
-def st_shap(plot, height=None):
-    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
-    components.html(shap_html, height=height)
+#def st_shap(plot, height=None):
+#    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
+#    components.html(shap_html, height=height)
 
 with header:
     logo_reduit = Image.open('datas_dashboard/logo_prêt_à_dépenser_réduit.png')
@@ -207,10 +207,14 @@ with dataset:
         [explainer,shap_values] = shap_explainer(mon_model, X_val_std) 
         
         # sur un idividu 
-        st.header("Probabilité de défaut de paiement du client :")
-        st_shap(shap.force_plot(explainer.expected_value[0],
-                        shap_values[position_client,:], X_val.iloc[position_client,:],
-                        link="logit"))
+        #st.header("Probabilité de défaut de paiement du client :", y_val_pred_probas)
+        st.write("Probabilité de défaut de paiement du client :", round(y_val_pred_probas[0],2))
+        
+        #st_shap(shap.force_plot(explainer.expected_value[0],
+        #               shap_values[position_client,:], X_val.iloc[position_client,:],
+        #               link="logit"))
+        #st.set_option('deprecation.showPyplotGlobalUse', False) 
+        #st.pyplot(shap.force_plot(explainer.expected_value[0], shap_values[position_client,:], X_val.iloc[position_client,:], link="logit"))
         
         st.header("Données du client contribuant à la décision :")
         st.set_option('deprecation.showPyplotGlobalUse', False)        

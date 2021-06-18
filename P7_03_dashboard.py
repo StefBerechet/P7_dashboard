@@ -8,6 +8,7 @@ import joblib
 import shap
 import streamlit.components.v1 as components
 from PIL import Image
+import matplotlib
 
 header = st.beta_container()
 dataset = st.beta_container()

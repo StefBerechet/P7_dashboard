@@ -10,9 +10,9 @@ import streamlit.components.v1 as components
 from PIL import Image
 import matplotlib
 
+
 header = st.beta_container()
 dataset = st.beta_container()
-
 
 @st.cache
 def chargement_donnees (file_name):
@@ -36,9 +36,9 @@ def shap_explainer (model, X_val_std):
     shap_values = explainer.shap_values(X_val_std)   
     return explainer, shap_values
 
-#def st_shap(plot, height=None):
-#    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
-#    components.html(shap_html, height=height)
+def st_shap(plot, height=None):
+    shap_html = f"<head>{shap.getjs()}</head><body>{plot.html()}</body>"
+    components.html(shap_html, height=height)
 
 with header:
     logo_reduit = Image.open('datas_dashboard/logo_prêt_à_dépenser_réduit.png')
@@ -49,14 +49,14 @@ with header:
     
 with dataset:          
         
-    ### CHARGEMENT DONNEES
+    ### CHARGEMENT DONNEES-----------------------------------------------------
        
     data_val = chargement_donnees('datas_dashboard/data_val.pkl')
     #data_val = chargement_donnees('data_val.pkl')
     data_info_clients = chargement_donnees('datas_dashboard/data_info_client.pkl')
     #data_info_clients = chargement_donnees('data_info_client.pkl')
     
-    ### TRANSFORMATION DONNEES
+    ### TRANSFORMATION DONNEES-------------------------------------------------
     
     # Fusion data_val avec data_info_clients
     colonnes_info_clients = list(data_info_clients.columns.values)    
@@ -65,7 +65,7 @@ with dataset:
     data_merge_val_info = data_val.merge(data_info_clients, on=['SK_ID_CURR','AMT_CREDIT','DAYS_BIRTH','DAYS_EMPLOYED'], how='left')    
     data_merge_val_info = data_merge_val_info[data_merge_val_info['OCCUPATION_TYPE'].notna()]
     
-    ### FILTRES SIDEBAR
+    ### FILTRES SIDEBAR--------------------------------------------------------
     
     #logo = Image.open('datas_dashboard/logo_prêt_à_dépenser_réduit.png')
     #st.sidebar.image(logo, use_column_width=True)
@@ -135,7 +135,7 @@ with dataset:
     data_info_clients_filtre = data_info_clients_filtre.reset_index(drop=True)   
    
 
-   ### CHOIX CLIENT
+   ### CHOIX CLIENT------------------------------------------------------
     
     st.sidebar.header("Veuillez choisir le client : ")
     st.sidebar.write('Nombre de clients disponibles :',data_info_clients_filtre.shape[0]) 
@@ -157,7 +157,7 @@ with dataset:
     
     if (client_id in data_info_clients_filtre['SK_ID_CURR'].values) == True:        
         
-        ## INFORMATIONS CLIENT
+        ## INFORMATIONS CLIENT-------------------------------------------
         
         # Extraction Informations client
         index = data_info_clients_filtre.index
@@ -179,7 +179,7 @@ with dataset:
         st.header("Informations au sujet du client choisi :") 
         st.table(df.T)
                 
-        ## PREDICITONS DU MODELE    
+        ## PREDICITONS DU MODELE---------------------------------------    
         
         # Input
         x_val = data_client.drop(['SK_ID_CURR'], axis=1)
@@ -201,21 +201,24 @@ with dataset:
             img_result = Image.open('datas_dashboard/img_client_non_éligible.png')
             st.image(img_result, use_column_width=True)
        
-        ## FEATURES IMPORTANCE        
+        ## FEATURES IMPORTANCE-----------------------------------------------        
         
         X_val = data_X_filtre.drop(['SK_ID_CURR'], axis=1)
         X_val_std = mon_scaler.transform(X_val)        
         [explainer,shap_values] = shap_explainer(mon_model, X_val_std) 
         
         # sur un idividu 
-        #st.header("Probabilité de défaut de paiement du client :", y_val_pred_probas)
-        st.write("Probabilité de défaut de paiement du client :", round(y_val_pred_probas[0],2))
+        st.header("Probabilité de défaut de paiement du client :", y_val_pred_probas)
+        st.write("Probabilité de défaut de paiement du client :", round(y_val_pred_probas[0],2))        
         
+        
+        ### --- Force Plot pose problème lors du déployement, la fonction st_shap n'est pas reconnue par StreamLit en ligne        
         #st_shap(shap.force_plot(explainer.expected_value[0],
         #               shap_values[position_client,:], X_val.iloc[position_client,:],
         #               link="logit"))
-        #st.set_option('deprecation.showPyplotGlobalUse', False) 
-        #st.pyplot(shap.force_plot(explainer.expected_value[0], shap_values[position_client,:], X_val.iloc[position_client,:], link="logit"))
+        ### --- Pour la version déployée en ligne, Force Plot est remplacé par la probabilité prédite par le modèle
+        
+        
         
         st.header("Données du client contribuant à la décision :")
         st.set_option('deprecation.showPyplotGlobalUse', False)        
